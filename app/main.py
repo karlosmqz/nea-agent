@@ -125,6 +125,7 @@ def _llm_del_arranque(settings: Settings, perfil: ProfileProvider | None) -> Any
             model=settings.llm_model,
             transcribe_model=settings.llm_transcribe_model,
             reasoning_effort=settings.llm_reasoning_effort,
+            openai_reasoning_effort=settings.llm_openai_reasoning_effort,
             provider_sort=settings.llm_provider_sort,
             timeout=settings.llm_timeout_seconds,
         )
@@ -134,6 +135,7 @@ def _llm_del_arranque(settings: Settings, perfil: ProfileProvider | None) -> Any
         transcribe_model=settings.llm_transcribe_model,
         base_url=settings.llm_base_url or None,
         reasoning_effort=settings.llm_reasoning_effort,
+        openai_reasoning_effort=settings.llm_openai_reasoning_effort,
         provider_sort=settings.llm_provider_sort,
         timeout=settings.llm_timeout_seconds,
     )

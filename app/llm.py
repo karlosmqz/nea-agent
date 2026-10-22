@@ -92,6 +92,7 @@ class OpenAiLlm:
         reasoning_effort: str = "",
         provider_sort: str = "",
         timeout: float = DEFAULT_TIMEOUT,
+        openai_reasoning_effort: str = "",
     ) -> None:
         # base_url ≠ None → proveedor OpenAI-compatible (p. ej. OpenRouter,
         # para el bench de modelos del 002). Ojo: la transcripción de audio
@@ -121,6 +122,8 @@ class OpenAiLlm:
         # cada llamada; `_extras_ok` los apaga solos si el proveedor se queja.
         self._reasoning_effort = reasoning_effort.strip()
         self._provider_sort = provider_sort.strip()
+        # Fork H&A: va siempre, fuera de los extras (ver Settings).
+        self._openai_reasoning_effort = openai_reasoning_effort.strip()
         self._extras_ok = True
         # Con proveedor propio (OpenRouter y compañía) no hay endpoint de
         # transcripción: el audio se manda DENTRO del chat, a un modelo que
@@ -283,6 +286,8 @@ class OpenAiLlm:
                 if tools:
                     kwargs["tools"] = tools
                     kwargs["tool_choice"] = "auto"
+                if self._openai_reasoning_effort:
+                    kwargs["reasoning_effort"] = self._openai_reasoning_effort
                 extra = self._extras()
                 if extra:
                     kwargs["extra_body"] = extra
@@ -382,8 +387,10 @@ class LlmPorElCrm:
         reasoning_effort: str = "",
         provider_sort: str = "",
         timeout: float = DEFAULT_TIMEOUT,
+        openai_reasoning_effort: str = "",
     ) -> None:
         self._crm = crm_base_url.rstrip("/")
+        self._openai_reasoning_effort = openai_reasoning_effort
         self._api_key = api_key
         self._perfil = perfil  # ProfileProvider (o None en pruebas)
         self._model = model
@@ -425,6 +432,7 @@ class LlmPorElCrm:
                 reasoning_effort=self._reasoning_effort,
                 provider_sort=self._provider_sort,
                 timeout=self._timeout,
+                openai_reasoning_effort=self._openai_reasoning_effort,
             )
             self._clientes[clave] = cliente
             logger.info("llm por el CRM: pienso con %s", model)

@@ -211,6 +211,10 @@ async def correr_caso(db: asyncpg.Connection, org: asyncpg.Record, caso: Caso,
     if falla:
         revisiones.append(("❌", falla))
     escalo = bool(handoff and handoff["handoff_at"])
+    if escalo and handoff["handoff_reason"] == "error":
+        # Nea traspasa cuando el modelo falla: eso no es «escaló bien».
+        revisiones.append(("❌", "Nea falló y pasó a una persona por error (ver logs de vocero_nea)"))
+        escalo = False
     if caso.debe_escalar is not None:
         ok = escalo == caso.debe_escalar
         revisiones.append(("✅" if ok else "❌",

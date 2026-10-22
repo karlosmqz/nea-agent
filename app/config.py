@@ -134,6 +134,15 @@ class Settings(BaseSettings):
         default="minimal", validation_alias=AliasChoices("LLM_REASONING_EFFORT")
     )
 
+    # Fork H&A — `reasoning_effort` con el nombre de OpenAI, en la raíz de la
+    # llamada. El ajuste de arriba va en el formato de OpenRouter
+    # (`reasoning: {effort}`), que OpenAI ignora; y gpt-6-luna razona por
+    # defecto y rechaza herramientas así en /v1/chat/completions («set
+    # reasoning_effort to 'none'»). Vacía = no se manda.
+    llm_openai_reasoning_effort: str = Field(
+        default="", validation_alias=AliasChoices("LLM_OPENAI_REASONING_EFFORT")
+    )
+
     # A qué proveedor de OpenRouter ir. "throughput" = al más rápido.
     #
     # La misma llamada tardaba 5.4 s o 19.6 s según a quién la ruteara: la
