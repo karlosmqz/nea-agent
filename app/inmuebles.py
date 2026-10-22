@@ -153,12 +153,17 @@ def parse_feed(xml: bytes) -> list[Inmueble]:
     return out
 
 
+# Palabras de relleno que el modelo mete en la zona («el norte de Cali»): si se
+# exigieran, «de» no aparece en ningún título y la zona nunca coincidía.
+_RELLENO_ZONA = {"de", "del", "la", "el", "los", "las", "en", "zona", "barrio", "sector", "por"}
+
+
 def _coincide_zona(inm: Inmueble, zona: str) -> bool:
-    z = _sin_tildes(zona)
-    if not z:
+    palabras = [p for p in _sin_tildes(zona).replace(",", " ").split() if p not in _RELLENO_ZONA]
+    if not palabras:
         return False
     lugar = _sin_tildes(f"{inm.barrio} {inm.ciudad} {inm.titulo}")
-    return all(p in lugar for p in z.split())
+    return all(p in lugar for p in palabras)
 
 
 class Inventario:
