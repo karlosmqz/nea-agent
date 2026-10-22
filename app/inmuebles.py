@@ -91,7 +91,8 @@ class Inmueble:
             "banos": self.banos,
             "estrato": self.estrato,
             "url": self.url,
-            "foto": self.fotos[0] if self.fotos else None,
+            # Sin foto: el modelo pegaba la URL larga de WASI en el chat. La
+            # foto va en la tarjeta interactiva (fase 3), no en el texto.
         }
 
 
@@ -196,10 +197,16 @@ class Inventario:
                 i for i in candidatos if i.habitaciones is None or i.habitaciones >= habitaciones_min
             ]
 
-        def orden(i: Inmueble) -> tuple[int, int]:
-            # primero los de su zona, luego el precio más cercano a su presupuesto
-            cerca = 0 if zona and _coincide_zona(i, zona) else 1
-            return (cerca, abs(i.precio - (presupuesto or i.precio)))
+        zona_sin_coincidencias = False
+        if zona:
+            en_zona = [i for i in candidatos if _coincide_zona(i, zona)]
+            if en_zona:
+                candidatos = en_zona
+            else:
+                zona_sin_coincidencias = True
+
+        def orden(i: Inmueble) -> int:
+            return abs(i.precio - (presupuesto or i.precio))
 
         califica, minimo = UMBRALES[operacion]
         if presupuesto:
@@ -217,13 +224,23 @@ class Inventario:
         else:
             elegidos, resultado = [], "sin_resultados"
 
+        def con_marca(i: Inmueble) -> dict[str, Any]:
+            d = i.para_llm()
+            if presupuesto:
+                d["frente_al_presupuesto"] = "dentro" if i.precio <= presupuesto else "un_poco_por_encima"
+            return d
+
         return {
             "ok": True,
             "resultado": resultado,
-            "inmuebles": [i.para_llm() for i in elegidos],
+            "inmuebles": [con_marca(i) for i in elegidos],
+            "zona_sin_coincidencias": zona_sin_coincidencias,
             "nota": (
-                "Muestra SOLO estos inmuebles, con su url. Precio sujeto a confirmación del asesor. "
-                "Si resultado es 'por_encima_del_presupuesto', dilo con tacto: superan un poco su presupuesto. "
+                "Muestra SOLO estos inmuebles: título corto, barrio, precio y url, en texto plano "
+                "(sin markdown, sin imágenes). Precio sujeto a confirmación del asesor. "
+                "Solo di que un inmueble supera su presupuesto si frente_al_presupuesto es "
+                "'un_poco_por_encima'. Si zona_sin_coincidencias es true, aclara que no hay en esa "
+                "zona y que estas son de otras zonas. "
                 "Si es 'sin_resultados', no inventes: ofrece que un asesor lo contacte (handoff)."
             ),
         }
