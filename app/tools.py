@@ -297,6 +297,15 @@ def solo_encendidas(schemas: list[dict[str, Any]], profile: Any) -> list[dict[st
     ]
 
 
+def con_inmuebles(schemas: list[dict[str, Any]], inventario: Any) -> list[dict[str, Any]]:
+    """Fork H&A: `buscar_inmuebles` solo existe si hay inventario cargado."""
+    if inventario is None or not len(inventario):
+        return schemas
+    from app.inmuebles import BUSCAR_INMUEBLES_SCHEMA
+
+    return schemas + [BUSCAR_INMUEBLES_SCHEMA]
+
+
 def tool_schemas(agenda_enabled: bool = True, agenda_v2: bool = False, coordination: bool = False) -> list[dict[str, Any]]:
     """El catálogo que se le ofrece al modelo en ESTE turno.
 
@@ -499,6 +508,14 @@ class ToolRuntime:
                 if args.get("confirmation") is not True or not args.get("selection_token"):
                     return {"ok": False, "error": "confirmation_required"}
                 return await self._ctx.crm.cancel_booking(self._crm_conv_id, str(args["selection_token"]), True)
+            if name == "buscar_inmuebles" and self._ctx.inventario is not None:
+                return self._ctx.inventario.buscar(
+                    operacion=str(args.get("operacion") or ""),
+                    presupuesto=args.get("presupuesto"),
+                    tipo=args.get("tipo"),
+                    zona=args.get("zona"),
+                    habitaciones_min=args.get("habitaciones_min"),
+                )
             if name == "update_ficha":
                 return await self._update_ficha(args)
             if name == "move_stage":

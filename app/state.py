@@ -453,6 +453,8 @@ class AppContext:
     # AGENDA allá llega sin reiniciar Nea. None = sin sonda (pruebas que fijan
     # `agenda_enabled` a mano).
     agenda_sonda: Any | None = None
+    # Fork H&A — inventario de inmuebles; None = módulo apagado.
+    inventario: Any | None = None
     # Un candado por identidad: los turnos de UNA conversación se serializan.
     # Sin esto, una ráfaga que llega mientras el turno anterior sigue en vuelo
     # abre un segundo turno con contexto viejo (se reservó una cita antes de

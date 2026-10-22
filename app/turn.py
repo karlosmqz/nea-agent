@@ -34,6 +34,7 @@ from app.profile import resolve_profile
 from app.prompt import build_system_prompt, zona_del_negocio
 from app.state import AppContext, BotMessage, InboundMessage, utcnow
 from app.tools import (
+    con_inmuebles,
     ToolRuntime,
     con_mover_etapa,
     etapas_siguientes,
@@ -728,7 +729,7 @@ async def _tool_loop(
     for _ in range(MAX_TOOL_ROUNDS):
         reply = await ctx.llm.complete(
             messages,
-            tools=solo_encendidas(
+            tools=con_inmuebles(solo_encendidas(
                 con_mover_etapa(
                     tool_schemas(
                         ctx.agenda_enabled,
@@ -738,7 +739,7 @@ async def _tool_loop(
                     getattr(runtime, "etapas", []),
                 ),
                 getattr(runtime, "_profile", None),
-            ),
+            ), getattr(ctx, "inventario", None)),
         )
         if not reply.tool_calls:
             return reply.content  # turno de puro texto

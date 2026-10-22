@@ -73,6 +73,10 @@ class Settings(BaseSettings):
     agent_timezone: str = "America/Mexico_City"
     brief_path: str = ""  # markdown local, fallback si el CRM no tiene perfil
 
+    # Fork H&A — inventario de inmuebles (app/inmuebles.py). Vacío = apagado.
+    inmuebles_feed_url: str = ""
+    inmuebles_refresh_seconds: float = 86400.0
+
     # LLM
     # El proveedor del modelo no tiene por qué ser OpenAI, así que las
     # variables no llevan su nombre: llamarlas OPENAI_* apuntando a OpenRouter

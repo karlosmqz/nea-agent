@@ -262,6 +262,20 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
             asyncio.create_task(followup_worker.run(), name="followup-worker"),
             asyncio.create_task(sender_worker.run(), name="sender-worker"),
         ]
+        if own_resources and c.settings.inmuebles_feed_url:
+            from app.inmuebles import Inventario, mantener_inventario
+
+            c.inventario = Inventario()
+            workers.append(
+                asyncio.create_task(
+                    mantener_inventario(
+                        c.inventario,
+                        c.settings.inmuebles_feed_url,
+                        c.settings.inmuebles_refresh_seconds,
+                    ),
+                    name="inventario-worker",
+                )
+            )
         logger.info(
             "Nea arriba (%s): despacho + seguimiento + envíos pendientes corriendo",
             (
